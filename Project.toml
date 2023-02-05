@@ -1,9 +1,18 @@
 name = "CategorizationModels"
 uuid = "eb72c636-9a01-4ecc-abce-d33068f7a378"
-authors = ["itsdfish <itsdfish@gmail.com> and contributors"]
+authors = ["itsdfish"]
 version = "0.1.0"
 
+[deps]
+ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+
 [compat]
+ConcreteStructs = "0.2.0"
+Distributions = "0.25.0"
+SafeTestsets = "0.0.1"
 julia = "1"
 
 [extras]
