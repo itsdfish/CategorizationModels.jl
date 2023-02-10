@@ -1,3 +1,15 @@
+@concrete struct RationalModel <: Model 
+    μk
+    μs 
+    σk
+    σs
+    n_states
+end
+
+function RationalModel(;μk, μs, σk, σs, n_states)
+    return RationalModel(μk, μs, σk, σs, n_states)
+end
+
 function generate_predictions(model::RationalModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 
     n = div(n_states, n_options)
@@ -22,32 +34,21 @@ function generate_predictions(model::RationalModel{T}, n_options) where {T}
                      
     # compute joint probability for each condition
     preds = map(i -> 
-                joint_distribution(i, projectors, R),
+                joint_distribution(model, i, projectors, R),
                 initial_states)
     return preds 
 end
 
-function compute_initial_state(μ, σ, n_states)
-    p = pdf.(Normal(μ, σ), 1:n_states)
-    p ./= sum(p)
-    return p
-end
+"""
+    joint_distribution(s0, projectors, R)
 
-function anti_diagonal(n)
-    x = zeros(n, n)
-    for i ∈ 1:n
-        x[i,n-i+1] = 1
-    end
-    return x 
-end
+# Arguments
 
-function make_projector(n, lb, ub)
-    x = zeros(n)
-    x[lb:ub] .= 1
-    return diagm(x)
-end
-
-function joint_distribution(s0, projectors, R)
+- `s0`: initial state vector 
+- `projectors`: array of projectors 
+- `R`: change of basis matrix 
+"""
+function joint_distribution(model::RationalModel, s0, projectors, R)
     n = length(projectors)
     probs = fill(eps(), n, n)
     for j ∈ 1:n
@@ -56,4 +57,3 @@ function joint_distribution(s0, projectors, R)
     end
     return probs 
 end
-
