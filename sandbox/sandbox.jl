@@ -73,3 +73,28 @@ preds = map((s,t) ->
             joint_distribution(model, s, projectors, t),
             initial_states,
             t_matrices)
+
+
+
+using CategorizationModels
+using Test 
+
+parms = (μk = 80.0,
+            σk = 20.0,
+            μs = 90.0,
+            σs = 20.0,
+            υ_ks_k = 5.0,
+            υ_sk_s = 4.0,
+            λ_ks_k = .50,
+            λ_sk_s = .50)
+
+n_states = 12
+n_options = 6
+
+model = BayesianModel(;parms..., n_states)
+
+
+@time generate_predictions(model, n_options)
+
+data = rand(model, preds, 100)
+@time sumlogpdf(model, preds, data)

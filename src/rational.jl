@@ -67,6 +67,7 @@ function joint_distribution(model::RationalModel, s0, projectors, R)
         i = n - j + 1
         probs[i,j] = sum(projectors[j] * R * projectors[i] * s0)
     end
+    probs .= max.(probs, eps())
     return probs 
 end
 

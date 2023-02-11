@@ -41,6 +41,7 @@ function joint_distribution(model::Model, s0, projectors, T)
     for j ∈ 1:n, i ∈ 1:n
         probs[i,j] = sum(projectors[j] * T * projectors[i] * s0)
     end
+    probs .= max.(probs, eps())
     return probs 
 end
 
@@ -109,4 +110,22 @@ Samples `n` indices (row,column) from a vector of joint distributions.
 """
 function rand(model::Model, preds::Vector{Array{T,2}}, n) where {T}
     return map(p -> rand(model, p, n), preds)
+end
+
+function logpdf(model::Model, preds::Array{T,2}, data) where {T}
+    n = length(data)
+    LLs = zeros(n)
+    for i ∈ 1:n
+        LLs[i] = log(preds[data[i]...])
+    end
+    return LLs 
+end
+
+function logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
+    return map(i -> logpdf(model, preds[i], data[i]), 1:length(data))
+end
+
+function sumlogpdf(model::Model, n_options, data) 
+    preds = generate_predictions(model, n_options)
+    return sum(sum(logpdf(model, preds, data)))
 end

@@ -35,6 +35,7 @@ function BayesianModel(;μk,
                         λ_ks_k,
                         λ_sk_s,
                         n_states)
+
     return BayesianModel(μk,
                          μs, 
                          σk, 
@@ -51,7 +52,6 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     (;υ_ks_k, υ_sk_s,λ_ks_k,λ_sk_s) = model 
 
     n = div(n_states, n_options)
-
     initial_states = Vector{Vector{T}}(undef,4)
     # initial state k then s for k stimulus
     initial_states[1] = compute_initial_state(μk, σk, n_states)
@@ -59,9 +59,9 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     initial_states[3] = compute_initial_state(μs, σs, n_states)
 
     # intensity matrix k then s for k stimulus
-    κ_ks_k = make_intensity_matrix(n_states, υ_ks_k)
+    κ_ks_k = make_intensity_matrix(model, n_states, υ_ks_k)
     # intensity matrix s then k for s stimulus 
-    κ_sk_s = make_intensity_matrix(n_states, υ_sk_s)
+    κ_sk_s = make_intensity_matrix(model, n_states, υ_sk_s)
 
     transitions = Vector{Matrix{T}}(undef,4)
     # transition matrix k then s for k stimulus
@@ -98,15 +98,15 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     return preds 
 end
 
-function make_intensity_matrix(n_states, υ)
+function make_intensity_matrix(model::BayesianModel, n_states, υ)
     mat = zeros(n_states, n_states)
     for c ∈ 1:n_states, r ∈ 1:n_states
-        if c == (r - 1)
-            mat[c,r] = 1 - υ
-        elseif r == (c - 1)
-            mat[c,r] = 1 + υ
+        if r == (c - 1)
+            mat[r,c] = 1 - υ
+        elseif c == (r - 1)
+            mat[r,c] = 1 + υ
         elseif r == c
-            mat[c,r] = -2
+            mat[r,c] = -2
         end
     end
     mat[1,1] = -1 - υ
@@ -114,7 +114,7 @@ function make_intensity_matrix(n_states, υ)
     return mat
 end
 
-function make_transition_matrix(model::Model, s0_sk, s0_ks, T)
+function make_transition_matrix(model::BayesianModel, s0_sk, s0_ks, T)
     n = length(s0_sk)
     probs = fill(0.0, n, n)
     for k ∈ 1:n, j ∈ 1:n

@@ -164,19 +164,78 @@ end
 end
 
 @safetestset "make_intensity_matrix" begin 
-    using CategorizationModels
-    using CategorizationModels: make_intensity_matrix
-    using Test 
+    @safetestset "BayesianModel" begin 
+        using CategorizationModels
+        using CategorizationModels: make_intensity_matrix
+        using Test 
+    
+        parms = (μk = 80.0,
+                σk = 20.0,
+                μs = 90.0,
+                σs = 20.0,
+                υ_ks_k = 5.0,
+                υ_sk_s = 4.0,
+                λ_ks_k = .50,
+                λ_sk_s = .50)
+    
+        model = BayesianModel(;parms..., n_states=5)
+    
+        x = [ -1.5   0.5   0.0   0.0   0.0;
+               1.5  -2.0   0.5   0.0   0.0;
+               0.0   1.5  -2.0   0.5   0.0;
+               0.0   0.0   1.5  -2.0   0.5;
+               0.0   0.0   0.0   1.5  -0.5]
+    
+        v = make_intensity_matrix(model, 5, .5)
+    
+        @test x ≈ v atol = 1e-3
+    
+        for i ∈ 1:30
+            θ = rand() * 5
+            n = rand(3:100)
+            v = make_intensity_matrix(model, n, θ)
+            sums = sum(v, dims=1)
+            @test sums ≈ zeros(1,n) atol = 1e-8
+        end
+    end
 
-    x = [ -1.5   0.5   0.0   0.0   0.0;
-           1.5  -2.0   0.5   0.0   0.0;
-           0.0   1.5  -2.0   0.5   0.0;
-           0.0   0.0   1.5  -2.0   0.5;
-           0.0   0.0   0.0   1.5  -0.5]
-
-    v = make_intensity_matrix(5, .5)
-
-    @test x ≈ v atol = 1e-3
+    @safetestset "MarkovModel" begin 
+        using CategorizationModels
+        using CategorizationModels: make_intensity_matrix
+        using Test 
+    
+        parms = (μ = 80,
+                σ = 20,
+                υ_k_k = 2.0,
+                υ_s_k = 1.0,
+                υ_k_s = 1.0,
+                υ_s_s = 2.0,
+                λ_k_k = .5,
+                λ_s_k = .5,
+                λ_k_s = .5,
+                λ_s_s = .5,
+                n_states=5)
+    
+        model = MarkovModel(;parms...)
+    
+        x = [  -1   3   0   0   0;
+                1  -4   3   0   0;
+                0   1  -4   3   0;
+                0   0   1  -4   3;
+                0   0   0   1  -3]
+    
+        v = make_intensity_matrix(model, 5, 3)
+    
+        @test x ≈ v atol = 1e-3
+    
+        for i ∈ 1:30
+            θ = rand() * 5
+            n = rand(3:100)
+            v = make_intensity_matrix(model, n, θ)
+            sums = sum(v, dims=1)
+            @test sums ≈ zeros(1,n) atol = 1e-8
+        end
+    end
 end
 
 @safetestset "rand" begin
@@ -211,7 +270,7 @@ end
         @test length(data1) == n_trials
     end
 
-    @safetestset "BayesianModel" begin
+    @safetestset "RationalModel" begin
         using CategorizationModels
         using Test 
         
@@ -237,4 +296,130 @@ end
         @test isa(data1, Vector{Tuple{Int64, Int64}})
         @test length(data1) == n_trials
     end
+end
+
+@safetestset "logpdf" begin 
+
+    @safetestset "RationalModel" begin 
+        using CategorizationModels
+        using Random
+        using Test 
+
+        Random.seed!(985)
+
+        μk = 80.0
+        σk = 20.0
+        μs = 90.0
+        σs = 20.0
+        n_states = 96
+
+        parms = (;μk,
+                σk,
+                μs,
+                σs,
+                n_states)
+
+        n_options = 6
+        n_trials = 10_000
+
+        model = RationalModel(;parms...)
+
+        preds =  generate_predictions(model, n_options)
+        data = rand(model, preds, n_trials)
+        μks = range(μk * .8, μk * 1.2, length = 100)
+        LLs = map(μk -> sumlogpdf(RationalModel(;parms..., μk), n_options, data), μks)
+        _,idx = findmax(LLs)
+        @test μks[idx] ≈ μk rtol = .05
+
+        σks = range(σk * .8, σk * 1.2, length = 100)
+        LLs = map(σk -> sumlogpdf(RationalModel(;parms..., σk), n_options, data), σks)
+        _,idx = findmax(LLs)
+        @test σks[idx] ≈ σk rtol = .05
+
+        μss = range(μs * .8, μs * 1.2, length = 100)
+        LLs = map(μs -> sumlogpdf(RationalModel(;parms..., μs), n_options, data), μss)
+        _,idx = findmax(LLs)
+        @test μss[idx] ≈ μs rtol = .05
+
+        σss = range(σs * .8, σs * 1.2, length = 100)
+        LLs = map(σs -> sumlogpdf(RationalModel(;parms..., σs), n_options, data), σss)
+        _,idx = findmax(LLs)
+        @test σss[idx] ≈ σs rtol = .05
+    end
+
+    @safetestset "BayesianModel" begin 
+        using CategorizationModels
+        using Random
+        using Test 
+
+        Random.seed!(985)
+
+        μk = 80.0
+        σk = 20.0
+        μs = 90.0
+        σs = 20.0
+        υ_ks_k = 5.0
+        υ_sk_s = 4.0
+        λ_ks_k = .50
+        λ_sk_s = .50
+        n_states = 96
+
+        parms = (;μk,
+                σk,
+                μs,
+                σs,
+                υ_ks_k,
+                υ_sk_s,
+                λ_ks_k,
+                λ_sk_s,
+                n_states)
+
+        n_options = 6
+        n_trials = 10_000
+
+        model = BayesianModel(;parms...)
+
+        preds =  generate_predictions(model, n_options)
+        data = rand(model, preds, n_trials)
+        μks = range(μk * .8, μk * 1.2, length = 100)
+        LLs = map(μk -> sumlogpdf(BayesianModel(;parms..., μk), n_options, data), μks)
+        _,idx = findmax(LLs)
+        @test μks[idx] ≈ μk rtol = .05
+
+        σks = range(σk * .8, σk * 1.2, length = 100)
+        LLs = map(σk -> sumlogpdf(BayesianModel(;parms..., σk), n_options, data), σks)
+        _,idx = findmax(LLs)
+        @test σks[idx] ≈ σk rtol = .05
+
+        μss = range(μs * .8, μs * 1.2, length = 100)
+        LLs = map(μs -> sumlogpdf(BayesianModel(;parms..., μs), n_options, data), μss)
+        _,idx = findmax(LLs)
+        @test μss[idx] ≈ μs rtol = .05
+
+        σss = range(σs * .8, σs * 1.2, length = 100)
+        LLs = map(σs -> sumlogpdf(BayesianModel(;parms..., σs), n_options, data), σss)
+        _,idx = findmax(LLs)
+        @test σss[idx] ≈ σs rtol = .05
+
+        υ_ks_ks = range(υ_ks_k * .8, υ_ks_k * 1.2, length = 100)
+        LLs = map(υ_ks_k -> sumlogpdf(BayesianModel(;parms..., υ_ks_k), n_options, data), υ_ks_ks)
+        _,idx = findmax(LLs)
+        @test υ_ks_ks[idx] ≈ υ_ks_k rtol = .05
+
+        υ_sk_ss = range(υ_sk_s * .8, υ_sk_s * 1.2, length = 100)
+        LLs = map(υ_sk_s -> sumlogpdf(BayesianModel(;parms..., υ_sk_s), n_options, data), υ_sk_ss)
+        _,idx = findmax(LLs)
+        @test υ_sk_ss[idx] ≈ υ_sk_s rtol = .05
+
+        λ_ks_ks = range(λ_ks_k * .8, λ_ks_k * 1.2, length = 100)
+        LLs = map(λ_ks_k -> sumlogpdf(BayesianModel(;parms..., λ_ks_k), n_options, data), λ_ks_ks)
+        _,idx = findmax(LLs)
+        @test λ_ks_ks[idx] ≈ λ_ks_k rtol = .05
+
+        λ_sk_ss = range(λ_sk_s * .8, λ_sk_s * 1.2, length = 100)
+        LLs = map(λ_sk_s -> sumlogpdf(BayesianModel(;parms..., λ_sk_s), n_options, data), λ_sk_ss)
+        _,idx = findmax(LLs)
+        @test λ_sk_ss[idx] ≈ λ_sk_s rtol = .05
+    end
+
 end
