@@ -1,5 +1,36 @@
 using SafeTestsets
 
+@safetestset "cummulative_dist" begin 
+    using CategorizationModels
+    using CategorizationModels: cummulative_dist
+    using Test 
+
+    probs = [.2 .4; .3 .1]
+    c_probs = cummulative_dist(probs)
+    true_c_probs = [.2 .9; .5 1.0]
+
+    @test c_probs ≈ true_c_probs atol = 1e-5
+end
+
+@safetestset "sample" begin 
+    using CategorizationModels
+    using CategorizationModels: cummulative_dist
+    using CategorizationModels: sample
+    using Statistics
+    using Random
+    using Test 
+
+    Random.seed!(9874)
+    probs = [.2 .4; .3 .1]
+    c_probs = cummulative_dist(probs)
+    samples = map(_ -> sample(c_probs), 1:100_000)
+    
+    @test probs[1,1] ≈ mean(x -> x == (1,1), samples) atol = 5e-3
+    @test probs[2,1] ≈ mean(x -> x == (2,1), samples) atol = 5e-3
+    @test probs[1,2] ≈ mean(x -> x == (1,2), samples) atol = 5e-3
+    @test probs[2,2] ≈ mean(x -> x == (2,2), samples) atol = 5e-3
+end
+
 @safetestset "compute_initial_state" begin 
     using CategorizationModels
     using CategorizationModels: compute_initial_state
@@ -146,4 +177,64 @@ end
     v = make_intensity_matrix(5, .5)
 
     @test x ≈ v atol = 1e-3
+end
+
+@safetestset "rand" begin
+    @safetestset "BayesianModel" begin
+        using CategorizationModels
+        using Test 
+        
+        parms = (μk = 80.0,
+                 σk = 20.0,
+                 μs = 90.0,
+                 σs = 20.0,
+                 υ_ks_k = 5.0,
+                 υ_sk_s = 4.0,
+                 λ_ks_k = .50,
+                 λ_sk_s = .50)
+        
+        n_states = 12
+        n_options = 6
+        n_trials = 100
+    
+        model = BayesianModel(;parms..., n_states)
+    
+        preds = generate_predictions(model, n_options)
+
+        data = rand(model, preds, n_trials)
+        @test isa(data, Vector{Vector{Tuple{Int64, Int64}}})
+        @test length(data) == 4
+        @test all(length.(data) .== n_trials)
+
+        data1 = rand(model, preds[1], n_trials)
+        @test isa(data1, Vector{Tuple{Int64, Int64}})
+        @test length(data1) == n_trials
+    end
+
+    @safetestset "BayesianModel" begin
+        using CategorizationModels
+        using Test 
+        
+        parms = (μk = 80.0,
+                 σk = 20.0,
+                 μs = 90.0,
+                 σs = 20.0)
+        
+        n_states = 12
+        n_options = 6
+        n_trials = 100
+    
+        model = RationalModel(;parms..., n_states)
+    
+        preds = generate_predictions(model, n_options)
+
+        data = rand(model, preds, n_trials)
+        @test isa(data, Vector{Vector{Tuple{Int64, Int64}}})
+        @test length(data) == 4
+        @test all(length.(data) .== n_trials)
+
+        data1 = rand(model, preds[1], n_trials)
+        @test isa(data1, Vector{Tuple{Int64, Int64}})
+        @test length(data1) == n_trials
+    end
 end

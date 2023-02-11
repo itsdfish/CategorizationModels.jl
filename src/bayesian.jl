@@ -1,3 +1,19 @@
+"""
+    BayesianModel <: Model 
+
+A model object for the Bayesian model. 
+
+# Field Names 
+- `μk`: the mean of the initial state distribution for stimulus k when k is evaluated first
+- `μs`: the mean of the initial state distribution for stimulus s when s is evaluated first
+- `σk`: the standard deviation of the initial state distribution for stimulus k when it is evaluated first
+- `σs`: the standard deviation of the initial state distribution for stimulus s when it is evaluated first
+- `υ_ks_k`: drift rate for stimulus k when k is evaluated first 
+- `υ_sk_s`: drift rate for stimulus k when s is evaluated first 
+- `λ_ks_k`: diffusion for stimulus k when k is evaluated first 
+- `λ_sk_s`: diffusion for stimulus s when s is evaluated first 
+- `n_states`: the number of evidence states
+"""
 @concrete struct BayesianModel <: Model 
     μk
     μs 
@@ -47,28 +63,28 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     # intensity matrix s then k for s stimulus 
     κ_sk_s = make_intensity_matrix(n_states, υ_sk_s)
 
-    t_matrices = Vector{Matrix{T}}(undef,4)
+    transitions = Vector{Matrix{T}}(undef,4)
     # transition matrix k then s for k stimulus
-    t_matrices[1] = exp(λ_ks_k * κ_ks_k)
+    transitions[1] = exp(λ_ks_k * κ_ks_k)
     # transition matrix s then k for s stimulus 
-    t_matrices[3] = exp(λ_sk_s * κ_sk_s)
+    transitions[3] = exp(λ_sk_s * κ_sk_s)
 
     # initial state s then k for k stimulus (why are there negative states?)
-    initial_states[2] = t_matrices[1] * initial_states[1]
+    initial_states[2] = transitions[1] * initial_states[1]
     # initial state k then s for s stimulus 
-    initial_states[4] = t_matrices[3] * initial_states[3]
+    initial_states[4] = transitions[3] * initial_states[3]
 
     # transition matrix s then k for k stimulus
-    t_matrices[2] = make_transition_matrix(model, 
+    transitions[2] = make_transition_matrix(model, 
                                         initial_states[2], 
                                         initial_states[1], 
-                                        t_matrices[1])
+                                        transitions[1])
 
     # transition matrix k then s for s stimulus
-    t_matrices[4] = make_transition_matrix(model, 
+    transitions[4] = make_transition_matrix(model, 
                                         initial_states[4], 
                                         initial_states[3], 
-                                        t_matrices[3])
+                                        transitions[3])
 
     # a projector for each option 
     projectors = map(i -> 
@@ -78,10 +94,9 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     preds = map((s,t) -> 
                     joint_distribution(model, s, projectors, t),
                     initial_states,
-                    t_matrices)
+                    transitions)
     return preds 
 end
-
 
 function make_intensity_matrix(n_states, υ)
     mat = zeros(n_states, n_states)

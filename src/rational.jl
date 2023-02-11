@@ -1,3 +1,15 @@
+"""
+    RationalModel  <: Model 
+
+A model object for the rational model. 
+
+# Field Names 
+- `μk`: the mean of the initial state distribution for stimulus k when k is evaluated first
+- `μs`: the mean of the initial state distribution for stimulus s when s is evaluated first
+- `σk`: the standard deviation of the initial state distribution for stimulus k when it is evaluated first
+- `σs`: the standard deviation of the initial state distribution for stimulus s when it is evaluated first
+- `n_states`: the number of evidence states
+"""
 @concrete struct RationalModel <: Model 
     μk
     μs 
@@ -56,4 +68,21 @@ function joint_distribution(model::RationalModel, s0, projectors, R)
         probs[i,j] = sum(projectors[j] * R * projectors[i] * s0)
     end
     return probs 
+end
+
+"""
+    anti_diagonal(n)
+
+Creates a n × n matrix with 1's along the off-diagonal and 0's elsewhere. 
+
+# Arguments
+
+- `n`: the number of evidence states 
+"""
+function anti_diagonal(n)
+    x = zeros(n, n)
+    for i ∈ 1:n
+        x[i,n-i+1] = 1
+    end
+    return x 
 end

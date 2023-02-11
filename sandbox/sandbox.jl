@@ -73,4 +73,3 @@ preds = map((s,t) ->
             joint_distribution(model, s, projectors, t),
             initial_states,
             t_matrices)
-
