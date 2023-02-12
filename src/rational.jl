@@ -22,6 +22,16 @@ function RationalModel(;μk, μs, σk, σs, n_states)
     return RationalModel(μk, μs, σk, σs, n_states)
 end
 
+"""
+    generate_predictions(model::RationalModel{T}, n_options) where {T}
+
+Generate predictions for the rational model. 
+
+# Arguments 
+
+- `model::RationalModel{T}`: a rational model object 
+- `n_options`: the number of response options 
+"""
 function generate_predictions(model::RationalModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 
     n = div(n_states, n_options)
@@ -46,13 +56,13 @@ function generate_predictions(model::RationalModel{T}, n_options) where {T}
                      
     # compute joint probability for each condition
     preds = map(i -> 
-                joint_distribution(model, i, projectors, R),
+                make_joint_dist(model, i, projectors, R),
                 initial_states)
     return preds 
 end
 
 """
-    joint_distribution(s0, projectors, R)
+    make_joint_dist(s0, projectors, R)
 
 # Arguments
 
@@ -60,7 +70,7 @@ end
 - `projectors`: array of projectors 
 - `R`: change of basis matrix 
 """
-function joint_distribution(model::RationalModel, s0, projectors, R)
+function make_joint_dist(model::RationalModel, s0, projectors, R)
     n = length(projectors)
     probs = fill(eps(), n, n)
     for j ∈ 1:n

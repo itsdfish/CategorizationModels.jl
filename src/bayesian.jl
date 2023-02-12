@@ -47,6 +47,16 @@ function BayesianModel(;μk,
                          n_states)
 end
 
+"""
+    generate_predictions(model::BayesianModel{T}, n_options) where {T}
+
+Generate predictions for the Bayesian model. 
+
+# Arguments 
+
+- `model::BayesianModel{T}`: a Bayesian model object 
+- `n_options`: the number of response options 
+"""
 function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 
     (;υ_ks_k, υ_sk_s,λ_ks_k,λ_sk_s) = model 
@@ -92,12 +102,36 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
                         1:n_options)
                         
     preds = map((s,t) -> 
-                    joint_distribution(model, s, projectors, t),
+                    make_joint_dist(model, s, projectors, t),
                     initial_states,
                     transitions)
     return preds 
 end
 
+"""
+    make_intensity_matrix(model::BayesianModel, n_states, υ)
+
+Returns the intensity matrix for the Markov model. 
+
+# Arguments 
+
+- `model::BayesianModel`: a Bayesian model object 
+- `n_states`: the number of evidence states 
+- `υ`: drift rate 
+
+# Example:
+
+```julia-repl
+v = make_intensity_matrix(model, 5, .5)
+
+5×5 Matrix{Float64}:
+ -1.5   0.5   0.0   0.0   0.0
+  1.5  -2.0   0.5   0.0   0.0
+  0.0   1.5  -2.0   0.5   0.0
+  0.0   0.0   1.5  -2.0   0.5
+  0.0   0.0   0.0   1.5  -0.5
+```
+"""
 function make_intensity_matrix(model::BayesianModel, n_states, υ)
     mat = zeros(n_states, n_states)
     for c ∈ 1:n_states, r ∈ 1:n_states

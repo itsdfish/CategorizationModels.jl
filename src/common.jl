@@ -35,7 +35,19 @@ function make_projector(n, lb, ub)
     return diagm(x)
 end
 
-function joint_distribution(model::Model, s0, projectors, T)
+"""
+    make_joint_dist(model::Model, s0, projectors, T)
+
+Returns an n × n matrix representing the joint probability distribution of response ratings. 
+
+# Arguments
+
+- `model::Model`: a model object 
+- `s0`: the initial state vector 
+- `projectors`: a vector of projector matrices 
+- `T`: a transition matrix 
+"""
+function make_joint_dist(model::Model, s0, projectors, T)
     n = length(projectors)
     probs = fill(0.0, n, n)
     for j ∈ 1:n, i ∈ 1:n
@@ -112,6 +124,17 @@ function rand(model::Model, preds::Vector{Array{T,2}}, n) where {T}
     return map(p -> rand(model, p, n), preds)
 end
 
+"""
+    logpdf(model::Model, preds::Array{T,2}, data) where {T}
+
+Computes the log pdf of responses within a given condition.
+
+# Arguments
+
+- `model`: a model object 
+- `preds`: an n × n joint probability matrices
+- `n`: the number of samples 
+"""
 function logpdf(model::Model, preds::Array{T,2}, data) where {T}
     n = length(data)
     LLs = zeros(n)
@@ -121,6 +144,17 @@ function logpdf(model::Model, preds::Array{T,2}, data) where {T}
     return LLs 
 end
 
+"""
+    logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
+
+Computes the log pdf of responses across all conditions. 
+
+# Arguments
+
+- `model`: a model object 
+- `preds`: a vector of n × n joint probability matrices
+- `n`: the number of samples 
+"""
 function logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
     return map(i -> logpdf(model, preds[i], data[i]), 1:length(data))
 end
