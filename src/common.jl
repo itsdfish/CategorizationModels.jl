@@ -11,7 +11,7 @@ Create a normally distribution initial state probability vector
 - `σ`: standard deviation of initial state distribution
 - `n_states`: the number of evidence states 
 """
-function compute_initial_state(μ, σ, n_states)
+function compute_initial_state(model::Model, μ, σ, n_states)
     p = pdf.(Normal(μ, σ), 1:n_states)
     p ./= sum(p)
     return p
@@ -133,7 +133,7 @@ Computes the log pdf of responses within a given condition.
 
 - `model`: a model object 
 - `preds`: an n × n joint probability matrices
-- `n`: the number of samples 
+- `data`: an array of vectors, one per condition
 """
 function logpdf(model::Model, preds::Array{T,2}, data) where {T}
     n = length(data)
@@ -153,12 +153,23 @@ Computes the log pdf of responses across all conditions.
 
 - `model`: a model object 
 - `preds`: a vector of n × n joint probability matrices
-- `n`: the number of samples 
+- `n`: a vector of data
 """
 function logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
     return map(i -> logpdf(model, preds[i], data[i]), 1:length(data))
 end
 
+"""
+    sumlogpdf(model::Model, n_options, data) 
+
+Returns the sum of the log likelihood across all trials and conditions. 
+
+# Arguments
+
+- `model`: a model object 
+- `n_options`: the number of rating options
+- `data`: an array of vectors, one per condition
+"""
 function sumlogpdf(model::Model, n_options, data) 
     preds = generate_predictions(model, n_options)
     return sum(sum(logpdf(model, preds, data)))

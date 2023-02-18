@@ -64,9 +64,9 @@ function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     n = div(n_states, n_options)
     initial_states = Vector{Vector{T}}(undef,4)
     # initial state k then s for k stimulus
-    initial_states[1] = compute_initial_state(μk, σk, n_states)
+    initial_states[1] = compute_initial_state(model, μk, σk, n_states)
     # initial state s then k for s stimulus
-    initial_states[3] = compute_initial_state(μs, σs, n_states)
+    initial_states[3] = compute_initial_state(model, μs, σs, n_states)
 
     # intensity matrix k then s for k stimulus
     κ_ks_k = make_intensity_matrix(model, n_states, υ_ks_k)
@@ -148,6 +148,18 @@ function make_intensity_matrix(model::BayesianModel, n_states, υ)
     return mat
 end
 
+"""
+    make_transition_matrix(model::BayesianModel, s0_sk, s0_ks, T)
+
+Generates a transition matrix for the Bayesian model.
+
+# Arguments
+
+- `model::BayesianModel`:
+- `s0_sk`:
+- `s0_ks`:
+- `T`:
+"""
 function make_transition_matrix(model::BayesianModel, s0_sk, s0_ks, T)
     n = length(s0_sk)
     probs = fill(0.0, n, n)

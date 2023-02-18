@@ -10,6 +10,7 @@ module CategorizationModels
         
     export BayesianModel
     export MarkovModel
+    export QuantumModel
     export RationalModel
 
     export generate_predictions
@@ -21,4 +22,5 @@ module CategorizationModels
     include("rational.jl")
     include("bayesian.jl")
     include("markov.jl")
+    include("quantum.jl")
 end

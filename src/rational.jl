@@ -38,11 +38,11 @@ function generate_predictions(model::RationalModel{T}, n_options) where {T}
     
     initial_states = Vector{Vector{T}}(undef,0)
     # initial state k then s for k stimulus
-    push!(initial_states, compute_initial_state(μk, σk, n_states))
+    push!(initial_states, compute_initial_state(model, μk, σk, n_states))
     #initial state s then k for k stimulus
     push!(initial_states, reverse(initial_states[1]))
     # initial state s then k for s stimulus
-    push!(initial_states, compute_initial_state(μs, σs, n_states))
+    push!(initial_states, compute_initial_state(model, μs, σs, n_states))
     # initial state k then s for s stimulus
     push!(initial_states, reverse(initial_states[3]))
     

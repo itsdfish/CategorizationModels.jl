@@ -71,7 +71,7 @@ function generate_predictions(model::MarkovModel{T}, n_options) where {T}
     (;λ_k_k,λ_s_k,λ_k_s,λ_s_s) = model 
     n = div(n_states, n_options)
 
-    initial_state = compute_initial_state(μ, σ, n_states)
+    initial_state = compute_initial_state(model, μ, σ, n_states)
 
     # intensity matrix for option k given k stimulus
     κ_k_k = make_intensity_matrix(model, n_states, υ_k_k)
@@ -90,6 +90,10 @@ function generate_predictions(model::MarkovModel{T}, n_options) where {T}
     T_k_s = exp(λ_k_s * κ_k_s)
     # transition matrix for option s given stimulus s 
     T_s_s = exp(λ_s_s * κ_s_s)
+
+    # for c ∈ 1:n_states, r ∈ 1:n_states
+    #     println("$r $c $(round.(T_k_k[r,c], digits=3))")
+    # end
 
     # a projector for each option 
     projectors = map(i -> 
