@@ -23,7 +23,7 @@ function RationalModel(;μk, μs, σk, σs, n_states)
 end
 
 """
-    generate_predictions(model::RationalModel{T}, n_options) where {T}
+    predict(model::RationalModel{T}, n_options) where {T}
 
 Generate predictions for the rational model. 
 
@@ -45,7 +45,7 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
-function generate_predictions(model::RationalModel{T}, n_options) where {T}
+function predict(model::RationalModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 
     n = div(n_states, n_options)
     

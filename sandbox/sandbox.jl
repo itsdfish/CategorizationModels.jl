@@ -32,7 +32,7 @@ n_options = 6
 model = QuantumModel(;parms..., n_states)
 
 # generate predictions for all conditions 
-preds = generate_predictions(model, n_options)
+preds = predict(model, n_options)
 
 # generate 100 trials of data per condition 
 data = rand(model, preds, 100)

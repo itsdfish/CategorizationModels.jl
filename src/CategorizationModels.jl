@@ -13,7 +13,7 @@ module CategorizationModels
     export QuantumModel
     export RationalModel
 
-    export generate_predictions
+    export predict
     export logpdf 
     export rand
     export sumlogpdf

@@ -66,7 +66,7 @@ end
     @test mx_id ≈ μ atol = 1e-3
 end
 
-@safetestset "generate_predictions" begin
+@safetestset "predict" begin
     @safetestset "Markov" begin
         using CategorizationModels
         using Test 
@@ -87,7 +87,7 @@ end
 
         model = MarkovModel(;parms..., n_states)
 
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
     
         p1 = [  0.05000   0.00500   0.00000   0.00000   0.00000   0.00000;
                 0.01700   0.05500   0.00800   0.00000   0.00000   0.00000;
@@ -143,7 +143,7 @@ end
 
         model = QuantumModel(;parms..., n_states)
 
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
     
         p1 = [  0.0360000   0.0030000   0.0030000   0.0250000   0.0550000   0.0320000;
                 0.0120000   0.0680000   0.0480000   0.0830000   0.0140000   0.1280000;
@@ -193,7 +193,7 @@ end
     
         model = RationalModel(;parms..., n_states)
     
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
     
         p1 = [  0.0    0.0    0.0    0.0    0.0   0.001;
                 0.0    0.0    0.0    0.0    0.01  0.0;
@@ -247,7 +247,7 @@ end
     
         model = BayesianModel(;parms..., n_states)
     
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
     
         # note these have been transposed from original
         p1 = [  -0.00400   0.00700   0.03000   0.01700   0.00400   0.00100;
@@ -420,7 +420,7 @@ end
     
         model = MarkovModel(;parms..., n_states)
     
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
 
         data = rand(model, preds, n_trials)
         @test isa(data, Vector{Vector{Tuple{Int64, Int64}}})
@@ -451,7 +451,7 @@ end
     
         model = BayesianModel(;parms..., n_states)
     
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
 
         data = rand(model, preds, n_trials)
         @test isa(data, Vector{Vector{Tuple{Int64, Int64}}})
@@ -478,7 +478,7 @@ end
     
         model = RationalModel(;parms..., n_states)
     
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
 
         data = rand(model, preds, n_trials)
         @test isa(data, Vector{Vector{Tuple{Int64, Int64}}})
@@ -517,7 +517,7 @@ end
 
         model = RationalModel(;parms...)
 
-        preds =  generate_predictions(model, n_options)
+        preds =  predict(model, n_options)
         data = rand(model, preds, n_trials)
         μks = range(μk * .8, μk * 1.2, length = 100)
         LLs = map(μk -> sumlogpdf(RationalModel(;parms..., μk), n_options, data), μks)
@@ -572,7 +572,7 @@ end
 
         model = BayesianModel(;parms...)
 
-        preds =  generate_predictions(model, n_options)
+        preds =  predict(model, n_options)
         data = rand(model, preds, n_trials)
         μks = range(μk * .8, μk * 1.2, length = 100)
         LLs = map(μk -> sumlogpdf(BayesianModel(;parms..., μk), n_options, data), μks)
@@ -651,7 +651,7 @@ end
 
         model = MarkovModel(;parms...)
 
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
 
         data = rand(model, preds, n_trials)
         μs = range(μ * .8, μ * 1.2, length = 100)
@@ -741,7 +741,7 @@ end
 
         model = QuantumModel(;parms...)
 
-        preds = generate_predictions(model, n_options)
+        preds = predict(model, n_options)
 
         data = rand(model, preds, n_trials)
         μs = range(μ * .8, μ * 1.2, length = 100)

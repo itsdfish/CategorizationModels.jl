@@ -56,7 +56,7 @@ function MarkovModel(;μ,
 end
 
 """
-    generate_predictions(model::MarkovModel{T}, n_options) where {T}
+    predict(model::MarkovModel{T}, n_options) where {T}
 
 Generate predictions for the Markov model. 
 
@@ -78,7 +78,7 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
-function generate_predictions(model::MarkovModel{T}, n_options) where {T}
+function predict(model::MarkovModel{T}, n_options) where {T}
     (;μ,σ,n_states) = model 
     (;υ_k_k,υ_s_k,υ_k_s,υ_s_s) = model 
     (;λ_k_k,λ_s_k,λ_k_s,λ_s_s) = model 

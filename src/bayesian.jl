@@ -48,7 +48,7 @@ function BayesianModel(;μk,
 end
 
 """
-    generate_predictions(model::BayesianModel{T}, n_options) where {T}
+    predict(model::BayesianModel{T}, n_options) where {T}
 
 Generate predictions for the Bayesian model. 
 
@@ -70,7 +70,7 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
-function generate_predictions(model::BayesianModel{T}, n_options) where {T}
+function predict(model::BayesianModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 
     (;υ_ks_k, υ_sk_s,λ_ks_k,λ_sk_s) = model 
 

@@ -192,6 +192,6 @@ Returns the sum of the log likelihood across all trials and conditions.
 - `data`: an array of vectors, one per condition
 """
 function sumlogpdf(model::Model, n_options, data) 
-    preds = generate_predictions(model, n_options)
+    preds = predict(model, n_options)
     return sum(sum(logpdf(model, preds, data)))
 end

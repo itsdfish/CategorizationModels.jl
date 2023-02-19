@@ -22,7 +22,8 @@ All models are a subtype of `Model <: ContinuousUnivariateDistribution`. The mod
 
 This package impliments the following three methods
 
-- `generate_predictions`: generates a vector of choices for each condition
+- `predict`: generates a vector of n × n matrices representing a predicted joint choice distribution 
+for each condition
 
 - `logpdf`: computes logpdf of data for choices in one condition or all conditions
 
@@ -98,7 +99,7 @@ n_options = 6
 model = QuantumModel(;parms..., n_states)
 
 # generate predictions for all conditions 
-preds = generate_predictions(model, n_options)
+preds = predict(model, n_options)
 
 # generate 100 trials of data per condition 
 data = rand(model, preds, 100)
