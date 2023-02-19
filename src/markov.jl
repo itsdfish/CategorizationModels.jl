@@ -64,6 +64,19 @@ Generate predictions for the Markov model.
 
 - `model::MarkovModel{T}`: a Markov model object 
 - `n_options`: the number of response options 
+
+# Returns 
+
+The predictions are organized as a vector of four n × n matrices representing the joint probability 
+distribution of rating both stimuli in two orders. The joint distributions are as follows:
+
+1. The joint probability distribution for k then s given stimulus k where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+2. The joint probability distribution for s then k given stimulus k where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
+
+3. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function generate_predictions(model::MarkovModel{T}, n_options) where {T}
     (;μ,σ,n_states) = model 
@@ -90,10 +103,6 @@ function generate_predictions(model::MarkovModel{T}, n_options) where {T}
     T_k_s = exp(λ_k_s * κ_k_s)
     # transition matrix for option s given stimulus s 
     T_s_s = exp(λ_s_s * κ_s_s)
-
-    # for c ∈ 1:n_states, r ∈ 1:n_states
-    #     println("$r $c $(round.(T_k_k[r,c], digits=3))")
-    # end
 
     # a projector for each option 
     projectors = map(i -> 

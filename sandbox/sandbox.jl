@@ -5,8 +5,12 @@ cd(@__DIR__)
 using Pkg 
 Pkg.activate("..")
 using CategorizationModels
+using Random 
 using Test 
 
+Random.seed!(5)
+
+# model predictions 
 parms = (μ = 80.0,
         σ = 20.0,
         υ_k_k = 1.0,
@@ -18,11 +22,20 @@ parms = (μ = 80.0,
         λ_k_s = .4,
         λ_s_s = .5)
 
-n_states = 12
+# number of evidence states 
+n_states = 96
+
+# number of rating options 
 n_options = 6
 
+# create a model object 
 model = QuantumModel(;parms..., n_states)
 
-preds = generate_predictions(model, n_options);
+# generate predictions for all conditions 
+preds = generate_predictions(model, n_options)
 
-round.(preds[1], digits=3)
+# generate 100 trials of data per condition 
+data = rand(model, preds, 100)
+
+# compute the logpdf of each data point
+LLs = logpdf(model, preds, data)

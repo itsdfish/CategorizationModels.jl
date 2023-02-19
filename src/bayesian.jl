@@ -56,6 +56,19 @@ Generate predictions for the Bayesian model.
 
 - `model::BayesianModel{T}`: a Bayesian model object 
 - `n_options`: the number of response options 
+
+# Returns 
+
+The predictions are organized as a vector of four n × n matrices representing the joint probability 
+distribution of rating both stimuli in two orders. The joint distributions are as follows:
+
+1. The joint probability distribution for k then s given stimulus k where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+2. The joint probability distribution for s then k given stimulus k where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
+
+3. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function generate_predictions(model::BayesianModel{T}, n_options) where {T}
     (;μk,μs,σk,σs,n_states) = model 

@@ -704,4 +704,94 @@ end
         _,idx = findmax(LLs)
         @test λ_s_ss[idx] ≈ λ_s_s rtol = .10
     end
+
+    @safetestset "Quantum" begin
+        using CategorizationModels
+        using Random 
+        using Test 
+
+        Random.seed!(6521)
+
+        μ = 80.0
+        σ = 20.0
+        υ_k_k = 2.0
+        υ_s_k = 2.0
+        υ_k_s = 2.0
+        υ_s_s = 2.0
+        λ_k_k = .5
+        λ_s_k = .5
+        λ_k_s = .5
+        λ_s_s = .5
+        n_states = 96
+
+        parms = (;μ,
+                σ,
+                υ_k_k,
+                υ_s_k,
+                υ_k_s,
+                υ_s_s,
+                λ_k_k,
+                λ_s_k,
+                λ_k_s,
+                λ_s_s,
+                n_states)
+
+        n_options = 6
+        n_trials = 15_000
+
+        model = QuantumModel(;parms...)
+
+        preds = generate_predictions(model, n_options)
+
+        data = rand(model, preds, n_trials)
+        μs = range(μ * .8, μ * 1.2, length = 100)
+        LLs = map(μ -> sumlogpdf(QuantumModel(;parms..., μ), n_options, data), μs)
+        _,idx = findmax(LLs)
+        @test μs[idx] ≈ μ rtol = .10
+
+        σs = range(σ * .8, σ * 1.2, length = 100)
+        LLs = map(σ -> sumlogpdf(QuantumModel(;parms..., σ), n_options, data), σs)
+        _,idx = findmax(LLs)
+        @test σs[idx] ≈ σ rtol = .10
+
+        υ_k_ks = range(υ_k_k * .8, υ_k_k * 1.2, length = 100)
+        LLs = map(υ_k_k -> sumlogpdf(QuantumModel(;parms..., υ_k_k), n_options, data), υ_k_ks)
+        _,idx = findmax(LLs)
+        @test υ_k_ks[idx] ≈ υ_k_k rtol = .10
+
+        υ_s_ks = range(υ_s_k * .8, υ_s_k * 1.2, length = 100)
+        LLs = map(υ_s_k -> sumlogpdf(QuantumModel(;parms..., υ_s_k), n_options, data), υ_s_ks)
+        _,idx = findmax(LLs)
+        @test υ_s_ks[idx] ≈ υ_s_k rtol = .10
+
+        υ_k_ss = range(υ_k_s * .8, υ_k_s * 1.2, length = 100)
+        LLs = map(υ_k_s -> sumlogpdf(QuantumModel(;parms..., υ_k_s), n_options, data), υ_k_ss)
+        _,idx = findmax(LLs)
+        @test υ_k_ss[idx] ≈ υ_k_s rtol = .10
+
+        υ_s_ss = range(υ_s_s * .8, υ_s_s * 1.2, length = 100)
+        LLs = map(υ_s_s -> sumlogpdf(QuantumModel(;parms..., υ_s_s), n_options, data), υ_s_ss)
+        _,idx = findmax(LLs)
+        @test υ_s_ss[idx] ≈ υ_s_s rtol = .10
+
+        λ_k_ks = range(λ_k_k * .8, λ_k_k * 1.2, length = 100)
+        LLs = map(λ_k_k -> sumlogpdf(QuantumModel(;parms..., λ_k_k), n_options, data), λ_k_ks)
+        _,idx = findmax(LLs)
+        @test λ_k_ks[idx] ≈ λ_k_k rtol = .10
+
+        λ_s_ks = range(λ_s_k * .8, λ_s_k * 1.2, length = 100)
+        LLs = map(λ_s_k -> sumlogpdf(QuantumModel(;parms..., λ_s_k), n_options, data), λ_s_ks)
+        _,idx = findmax(LLs)
+        @test λ_s_ks[idx] ≈ λ_s_k rtol = .10
+
+        λ_k_ss = range(λ_k_s * .8, λ_k_s * 1.2, length = 100)
+        LLs = map(λ_k_s -> sumlogpdf(QuantumModel(;parms..., λ_k_s), n_options, data), λ_k_ss)
+        _,idx = findmax(LLs)
+        @test λ_k_ss[idx] ≈ λ_k_s rtol = .10
+
+        λ_s_ss = range(λ_s_s * .8, λ_s_s * 1.2, length = 100)
+        LLs = map(λ_s_s -> sumlogpdf(QuantumModel(;parms..., λ_s_s), n_options, data), λ_s_ss)
+        _,idx = findmax(LLs)
+        @test λ_s_ss[idx] ≈ λ_s_s rtol = .10
+    end
 end

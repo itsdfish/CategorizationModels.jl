@@ -112,13 +112,25 @@ end
 """
     rand(model::Model, preds::Vector{Array{T,2}}, n) where {T}
 
-Samples `n` indices (row,column) from a vector of joint distributions.
+Samples `n` indices (i,j) from a vector of joint distributions.
 
 # Arguments
 
 - `model`: a model object 
 - `preds`: a vector of n × n joint probability matrices
 - `n`: the number of samples 
+
+# Returns 
+
+The data are organized as a vector of four n × n matrices representing ratings of both stimuli in two orders. The data are as follows:
+
+1. Data for k then s given stimulus k where element `(i,j)` is the rating index for rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+2. Data for s then k given stimulus k where element `(i,j)` is the rating index for rating stimulus `s` as `i` and stimulus `k` as `j`
+
+3. Data for k then s given stimulus s where element `(i,j)` is the rating index for rating stimulus `k` as `i` and stimulus `s` as `j`
+
+4. Data for k then s given stimulus s where element `(i,j)`  is the rating index for rating stimulus `s` as `i` and stimulus `k` as `j`
 """
 function rand(model::Model, preds::Vector{Array{T,2}}, n) where {T}
     return map(p -> rand(model, p, n), preds)
@@ -154,6 +166,15 @@ Computes the log pdf of responses across all conditions.
 - `model`: a model object 
 - `preds`: a vector of n × n joint probability matrices
 - `n`: a vector of data
+
+# Returns 
+
+The logpdfs are organized as four vectors of responses, one vector for each stimulus type and ordering permutation. The vectors are:
+
+1. logpdfs for the condition in which stimulus k is rated as k then s  
+2. logpdfs for the condition in which stimulus k is rated as s then k 
+3. logpdfs for the condition in which stimulus s is rated as k then s   
+4. logpdfs for the condition in which stimulus s is rated as s then k  
 """
 function logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
     return map(i -> logpdf(model, preds[i], data[i]), 1:length(data))

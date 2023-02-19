@@ -4,16 +4,17 @@
 A model object for the quantum model. 
 
 # Field Names 
+
 - `μ`: the mean of the initial state distribution
 - `σ`: the standard deviation of the initial state distribution
-- `υ_k_s_k`: drift rate for k then s given stimulus k
-- `υ_s_k_k`: drift rate for s then k given stimulus k
-- `υ_k_s_s`: drift rate for k then s given stimulus s
-- `υ_s_k_s`: drift rate for s then k given stimulus s
-- `λ_k_s_k`: diffusion rate for k then s given stimulus k
-- `λ_s_k_k`: diffusion rate for s then k given stimulus k
-- `λ_k_s_s`: diffusion rate for k then s given stimulus s
-- `λ_s_k_s`: diffusion rate for s then k given stimulus s
+- `υ_k_k`: drift rate for stimulus k when k is presented 
+- `υ_s_k`: drift rate for stimulus s when s is presented 
+- `υ_k_s`: drift rate for stimulus k when s is presented  
+- `υ_s_s`: drift rate for stimulus s when s is presented 
+- `λ_k_k`: diffusion for stimulus k when k is presented
+- `λ_s_k`: diffusion for stimulus s when k is presented
+- `λ_k_s`: diffusion for stimulus k when s is presented
+- `λ_s_s`: diffusion for stimulus s when s is presented
 - `n_states`: the number of evidence states
 """
 @concrete struct QuantumModel <: Model 
@@ -61,12 +62,25 @@ end
 """
     generate_predictions(model::QuantumModel{T}, n_options) where {T}
 
-Generate predictions for the Markov model. 
+Generate predictions for the Quantum model. 
 
 # Arguments 
 
 - `model::QuantumModel{T}`: a Markov model object 
 - `n_options`: the number of response options 
+
+# Returns 
+
+The predictions are organized as a vector of four n × n matrices representing the joint probability 
+distribution of rating both stimuli in two orders. The joint distributions are as follows:
+
+1. The joint probability distribution for k then s given stimulus k where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+2. The joint probability distribution for s then k given stimulus k where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
+
+3. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `k` as `i` and stimulus `s` as `j` 
+
+4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function generate_predictions(model::QuantumModel{T}, n_options) where {T}
     (;μ,σ,α,n_states) = model 
@@ -150,7 +164,7 @@ function make_hamiltonian(model::QuantumModel, n_states, υ, σ)
 end
 
 """
-    make_joint_dist(model::QuantumModel, s0, projectors, T)
+    make_joint_dist(model::QuantumModel, s0, projectors, U1, U2)
 
 Returns an n × n matrix representing the joint probability distribution of response ratings. 
 
@@ -166,6 +180,7 @@ function make_joint_dist(model::QuantumModel, s0, projectors, U1, U2)
     n = length(projectors)
     probs = fill(0.0, n, n)
     for j ∈ 1:n, i ∈ 1:n
+        # why abs instead of real?
         probs[i,j] = sum(abs.(projectors[j] * (U2 * U1') * projectors[i] * U1 * s0).^2)
     end
     probs .= max.(probs, eps())
