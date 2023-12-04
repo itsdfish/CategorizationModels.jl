@@ -1,6 +1,5 @@
 module CategorizationModels
 
-    using ConcreteStructs
     using Distributions
     using LinearAlgebra
 

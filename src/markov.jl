@@ -1,5 +1,5 @@
 """
-    MarkovModel <: Model 
+    MarkovModel{T<:Real} <: Model 
 
 A model object for the Markov model. 
 
@@ -16,18 +16,18 @@ A model object for the Markov model.
 - `λ_s_s`: diffusion for stimulus s when s is presented
 - `n_states`: the number of evidence states
 """
-@concrete struct MarkovModel <: Model 
-    μ
-    σ
-    υ_k_k
-    υ_s_k
-    υ_k_s
-    υ_s_s
-    λ_k_k
-    λ_s_k
-    λ_k_s
-    λ_s_s
-    n_states
+struct MarkovModel{T<:Real} <: Model 
+    μ::T
+    σ::T
+    υ_k_k::T
+    υ_s_k::T
+    υ_k_s::T
+    υ_s_s::T
+    λ_k_k::T
+    λ_s_k::T
+    λ_k_s::T
+    λ_s_s::T
+    n_states::Int
 end
 
 function MarkovModel(;μ,
@@ -53,6 +53,34 @@ function MarkovModel(;μ,
                         λ_k_s,
                         λ_s_s,
                         n_states)
+end
+
+function MarkovModel(
+    μ,
+    σ,
+    υ_k_k,
+    υ_s_k,
+    υ_k_s,
+    υ_s_s,
+    λ_k_k,
+    λ_s_k,
+    λ_k_s,
+    λ_s_s,
+    n_states)
+
+    parms = promote(   
+         μ,
+        σ,
+        υ_k_k,
+        υ_s_k,
+        υ_k_s,
+        υ_s_s,
+        λ_k_k,
+        λ_s_k,
+        λ_k_s,
+        λ_s_s)
+
+    return MarkovModel(parms..., n_states)
 end
 
 """

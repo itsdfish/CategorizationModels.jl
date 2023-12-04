@@ -1,5 +1,5 @@
 """
-    BayesianModel <: Model 
+    BayesianModel{T<:Real} <: Model 
 
 A model object for the Bayesian model. 
 
@@ -14,16 +14,16 @@ A model object for the Bayesian model.
 - `λ_sk_s`: diffusion for stimulus s when s is evaluated first 
 - `n_states`: the number of evidence states
 """
-@concrete struct BayesianModel <: Model 
-    μk
-    μs 
-    σk
-    σs
-    υ_ks_k
-    υ_sk_s
-    λ_ks_k
-    λ_sk_s
-    n_states
+struct BayesianModel{T<:Real} <: Model 
+    μk::T
+    μs::T 
+    σk::T
+    σs::T
+    υ_ks_k::T
+    υ_sk_s::T
+    λ_ks_k::T
+    λ_sk_s::T
+    n_states::Int
 end
 
 function BayesianModel(;μk,
@@ -45,6 +45,30 @@ function BayesianModel(;μk,
                          λ_ks_k,
                          λ_sk_s,
                          n_states)
+end
+
+function BayesianModel(
+    μk,
+    μs, 
+    σk, 
+    σs, 
+    υ_ks_k, 
+    υ_sk_s,
+    λ_ks_k,
+    λ_sk_s,
+    n_states)
+
+    parms = promote(    
+        μk,
+        μs, 
+        σk, 
+        σs, 
+        υ_ks_k, 
+        υ_sk_s,
+        λ_ks_k,
+        λ_sk_s)
+        
+    return BayesianModel(parms..., n_states)
 end
 
 """

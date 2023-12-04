@@ -127,7 +127,7 @@ end
         using CategorizationModels
         using Test 
         
-        parms = (μ = 80.0,
+        parms = (μ = 80,
                 σ = 20.0,
                 υ_k_k = 1.0,
                 υ_s_k = 2.0,
@@ -317,7 +317,7 @@ end
             n = rand(3:100)
             v = make_intensity_matrix(model, n, θ)
             sums = sum(v, dims=1)
-            @test sums ≈ zeros(1,n) atol = 1e-8
+            @test sums ≈ zeros(1, n) atol = 1e-8
         end
     end
 

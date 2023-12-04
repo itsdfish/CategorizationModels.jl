@@ -1,5 +1,5 @@
 """
-    RationalModel  <: Model 
+    RationalModel{T<:Real}  <: Model 
 
 A model object for the rational model. 
 
@@ -10,15 +10,20 @@ A model object for the rational model.
 - `σs`: the standard deviation of the initial state distribution for stimulus s when it is evaluated first
 - `n_states`: the number of evidence states
 """
-@concrete struct RationalModel <: Model 
-    μk
-    μs 
-    σk
-    σs
-    n_states
+struct RationalModel{T<:Real} <: Model 
+    μk::T
+    μs::T 
+    σk::T
+    σs::T
+    n_states::Int
 end
 
 function RationalModel(;μk, μs, σk, σs, n_states)
+    return RationalModel(μk, μs, σk, σs, n_states)
+end
+
+function RationalModel(μk, μs, σk, σs, n_states)
+    μk, μs, σk, σs = promote(μk, μs, σk, σs)
     return RationalModel(μk, μs, σk, σs, n_states)
 end
 
