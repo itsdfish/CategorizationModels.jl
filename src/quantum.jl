@@ -181,14 +181,10 @@ julia> v = make_hamiltonian(model, 5, 2, .5)
 """
 function make_hamiltonian(model::QuantumModel, n_states, υ, σ)
     mat = zeros(n_states, n_states)
-    for c ∈ 1:n_states, r ∈ 1:n_states
-        if (c - r) == 1
-            mat[r,c] = σ
-        elseif (c - r) == -1
-            mat[r,c] = σ
-        elseif r == c
-            mat[r,c] = (r / n_states) * υ
-        end
+    for i ∈ 1:n_states
+        mat[i,i] = (i / n_states) * υ
+        i < n_states ? mat[i,i+1] = σ : nothing 
+        i > 1 ? (mat[i,i-1] = σ) : nothing 
     end
     return mat
 end
