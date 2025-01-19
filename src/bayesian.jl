@@ -14,9 +14,9 @@ A model object for the Bayesian model.
 - `λ_sk_s`: diffusion for stimulus s when s is evaluated first 
 - `n_states`: the number of evidence states
 """
-struct BayesianModel{T<:Real} <: Model 
+struct BayesianModel{T <: Real} <: Model
     μk::T
-    μs::T 
+    μs::T
     σk::T
     σs::T
     υ_ks_k::T
@@ -26,48 +26,46 @@ struct BayesianModel{T<:Real} <: Model
     n_states::Int
 end
 
-function BayesianModel(;μk,
-                        μs, 
-                        σk, 
-                        σs, 
-                        υ_ks_k, 
-                        υ_sk_s,
-                        λ_ks_k,
-                        λ_sk_s,
-                        n_states)
-
-    return BayesianModel(μk,
-                         μs, 
-                         σk, 
-                         σs, 
-                         υ_ks_k, 
-                         υ_sk_s,
-                         λ_ks_k,
-                         λ_sk_s,
-                         n_states)
-end
-
-function BayesianModel(
-    μk,
-    μs, 
-    σk, 
-    σs, 
-    υ_ks_k, 
+function BayesianModel(; μk,
+    μs,
+    σk,
+    σs,
+    υ_ks_k,
     υ_sk_s,
     λ_ks_k,
     λ_sk_s,
     n_states)
+    return BayesianModel(μk,
+        μs,
+        σk,
+        σs,
+        υ_ks_k,
+        υ_sk_s,
+        λ_ks_k,
+        λ_sk_s,
+        n_states)
+end
 
-    parms = promote(    
+function BayesianModel(
+    μk,
+    μs,
+    σk,
+    σs,
+    υ_ks_k,
+    υ_sk_s,
+    λ_ks_k,
+    λ_sk_s,
+    n_states)
+    parms = promote(
         μk,
-        μs, 
-        σk, 
-        σs, 
-        υ_ks_k, 
+        μs,
+        σk,
+        σs,
+        υ_ks_k,
         υ_sk_s,
         λ_ks_k,
         λ_sk_s)
-        
+
     return BayesianModel(parms..., n_states)
 end
 
@@ -95,11 +93,11 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function predict(model::BayesianModel{T}, n_options) where {T}
-    (;μk,μs,σk,σs,n_states) = model 
-    (;υ_ks_k, υ_sk_s,λ_ks_k,λ_sk_s) = model 
+    (; μk, μs, σk, σs, n_states) = model
+    (; υ_ks_k, υ_sk_s, λ_ks_k, λ_sk_s) = model
 
     n = div(n_states, n_options)
-    initial_states = Vector{Vector{T}}(undef,4)
+    initial_states = Vector{Vector{T}}(undef, 4)
     # initial state k then s for k stimulus
     initial_states[1] = compute_initial_state(model, μk, σk, n_states)
     # initial state s then k for s stimulus
@@ -110,7 +108,7 @@ function predict(model::BayesianModel{T}, n_options) where {T}
     # intensity matrix s then k for s stimulus 
     κ_sk_s = make_intensity_matrix(model, n_states, υ_sk_s)
 
-    transitions = Vector{Matrix{T}}(undef,4)
+    transitions = Vector{Matrix{T}}(undef, 4)
     # transition matrix k then s for k stimulus
     transitions[1] = exp(λ_ks_k * κ_ks_k)
     # transition matrix s then k for s stimulus 
@@ -122,27 +120,27 @@ function predict(model::BayesianModel{T}, n_options) where {T}
     initial_states[4] = transitions[3] * initial_states[3]
 
     # transition matrix s then k for k stimulus
-    transitions[2] = make_transition_matrix(model, 
-                                        initial_states[2], 
-                                        initial_states[1], 
-                                        transitions[1])
+    transitions[2] = make_transition_matrix(model,
+        initial_states[2],
+        initial_states[1],
+        transitions[1])
 
     # transition matrix k then s for s stimulus
-    transitions[4] = make_transition_matrix(model, 
-                                        initial_states[4], 
-                                        initial_states[3], 
-                                        transitions[3])
+    transitions[4] = make_transition_matrix(model,
+        initial_states[4],
+        initial_states[3],
+        transitions[3])
 
     # a projector for each option 
-    projectors = map(i -> 
-                        make_projector(n_states, n * (i - 1) + 1, i * n),
-                        1:n_options)
-                        
-    preds = map((s,t) -> 
-                    make_joint_dist(model, s, projectors, t),
-                    initial_states,
-                    transitions)
-    return preds 
+    projectors = map(i ->
+            make_projector(n_states, n * (i - 1) + 1, i * n),
+        1:n_options)
+
+    preds = map((s, t) ->
+            make_joint_dist(model, s, projectors, t),
+        initial_states,
+        transitions)
+    return preds
 end
 
 """
@@ -173,15 +171,15 @@ function make_intensity_matrix(model::BayesianModel, n_states, υ)
     mat = zeros(n_states, n_states)
     for c ∈ 1:n_states, r ∈ 1:n_states
         if r == (c - 1)
-            mat[r,c] = 1 - υ
+            mat[r, c] = 1 - υ
         elseif c == (r - 1)
-            mat[r,c] = 1 + υ
+            mat[r, c] = 1 + υ
         elseif r == c
-            mat[r,c] = -2
+            mat[r, c] = -2
         end
     end
-    mat[1,1] = -1 - υ
-    mat[end,end] = υ - 1
+    mat[1, 1] = -1 - υ
+    mat[end, end] = υ - 1
     return mat
 end
 
@@ -201,7 +199,7 @@ function make_transition_matrix(model::BayesianModel, s0_sk, s0_ks, T)
     n = length(s0_sk)
     probs = fill(0.0, n, n)
     for k ∈ 1:n, j ∈ 1:n
-        probs[j,k] = s0_ks[j] * T[k,j] / s0_sk[k]
+        probs[j, k] = s0_ks[j] * T[k, j] / s0_sk[k]
     end
-    return probs 
+    return probs
 end

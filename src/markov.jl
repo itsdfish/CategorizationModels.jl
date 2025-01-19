@@ -16,7 +16,7 @@ A model object for the Markov model.
 - `λ_s_s`: diffusion for stimulus s when s is presented
 - `n_states`: the number of evidence states
 """
-struct MarkovModel{T<:Real} <: Model 
+struct MarkovModel{T <: Real} <: Model
     μ::T
     σ::T
     υ_k_k::T
@@ -30,29 +30,28 @@ struct MarkovModel{T<:Real} <: Model
     n_states::Int
 end
 
-function MarkovModel(;μ,
-                    σ,
-                    υ_k_k,
-                    υ_s_k,
-                    υ_k_s,
-                    υ_s_s,
-                    λ_k_k,
-                    λ_s_k,
-                    λ_k_s,
-                    λ_s_s,
-                    n_states)
-
-    return MarkovModel( μ,
-                        σ,
-                        υ_k_k,
-                        υ_s_k,
-                        υ_k_s,
-                        υ_s_s,
-                        λ_k_k,
-                        λ_s_k,
-                        λ_k_s,
-                        λ_s_s,
-                        n_states)
+function MarkovModel(; μ,
+    σ,
+    υ_k_k,
+    υ_s_k,
+    υ_k_s,
+    υ_s_s,
+    λ_k_k,
+    λ_s_k,
+    λ_k_s,
+    λ_s_s,
+    n_states)
+    return MarkovModel(μ,
+        σ,
+        υ_k_k,
+        υ_s_k,
+        υ_k_s,
+        υ_s_s,
+        λ_k_k,
+        λ_s_k,
+        λ_k_s,
+        λ_s_s,
+        n_states)
 end
 
 function MarkovModel(
@@ -67,9 +66,8 @@ function MarkovModel(
     λ_k_s,
     λ_s_s,
     n_states)
-
-    parms = promote(   
-         μ,
+    parms = promote(
+        μ,
         σ,
         υ_k_k,
         υ_s_k,
@@ -107,9 +105,9 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function predict(model::MarkovModel{T}, n_options) where {T}
-    (;μ,σ,n_states) = model 
-    (;υ_k_k,υ_s_k,υ_k_s,υ_s_s) = model 
-    (;λ_k_k,λ_s_k,λ_k_s,λ_s_s) = model 
+    (; μ, σ, n_states) = model
+    (; υ_k_k, υ_s_k, υ_k_s, υ_s_s) = model
+    (; λ_k_k, λ_s_k, λ_k_s, λ_s_s) = model
     n = div(n_states, n_options)
 
     initial_state = compute_initial_state(model, μ, σ, n_states)
@@ -133,11 +131,11 @@ function predict(model::MarkovModel{T}, n_options) where {T}
     T_s_s = exp(λ_s_s * κ_s_s)
 
     # a projector for each option 
-    projectors = map(i -> 
-                        make_projector(n_states, n * (i - 1) + 1, i * n),
-                        1:n_options)
+    projectors = map(i ->
+            make_projector(n_states, n * (i - 1) + 1, i * n),
+        1:n_options)
 
-    preds = Vector{Matrix{T}}(undef,4)
+    preds = Vector{Matrix{T}}(undef, 4)
 
     # joint probability distribution for k then s given stimulus k 
     preds[1] = make_joint_dist(model, initial_state, projectors, T_k_k, T_s_k)
@@ -147,7 +145,7 @@ function predict(model::MarkovModel{T}, n_options) where {T}
     preds[3] = make_joint_dist(model, initial_state, projectors, T_s_s, T_k_s)
     # joint probability distribution for k then s given stimulus s 
     preds[4] = make_joint_dist(model, initial_state, projectors, T_k_s, T_s_s)
-    return preds 
+    return preds
 end
 
 """
@@ -178,15 +176,15 @@ function make_intensity_matrix(model::MarkovModel, n_states, υ)
     mat = zeros(n_states, n_states)
     for c ∈ 1:n_states, r ∈ 1:n_states
         if r == (c - 1)
-            mat[r,c] = υ
+            mat[r, c] = υ
         elseif c == (r - 1)
-            mat[r,c] = 1
+            mat[r, c] = 1
         elseif r == c
-            mat[r,c] = -υ - 1
+            mat[r, c] = -υ - 1
         end
     end
-    mat[1,1] = -1
-    mat[end,end] = -υ
+    mat[1, 1] = -1
+    mat[end, end] = -υ
     return mat
 end
 
@@ -207,8 +205,8 @@ function make_joint_dist(model::MarkovModel, s0, projectors, T1, T2)
     n = length(projectors)
     probs = fill(0.0, n, n)
     for j ∈ 1:n, i ∈ 1:n
-        probs[i,j] = sum(abs.(projectors[j] * T2 * projectors[i] * T1 * s0))
+        probs[i, j] = sum(abs.(projectors[j] * T2 * projectors[i] * T1 * s0))
     end
     probs .= max.(probs, eps())
-    return probs 
+    return probs
 end

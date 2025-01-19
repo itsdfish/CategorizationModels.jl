@@ -17,7 +17,7 @@ A model object for the quantum model.
 - `λ_s_s`: diffusion for stimulus s when s is presented
 - `n_states`: the number of evidence states
 """
-struct QuantumModel{T<:Real} <: Model 
+struct QuantumModel{T <: Real} <: Model
     μ::T
     σ::T
     υ_k_k::T
@@ -32,31 +32,30 @@ struct QuantumModel{T<:Real} <: Model
     n_states::Int
 end
 
-function QuantumModel(;μ,
-                    σ,
-                    υ_k_k,
-                    υ_s_k,
-                    υ_k_s,
-                    υ_s_s,
-                    λ_k_k,
-                    λ_s_k,
-                    λ_k_s,
-                    λ_s_s,
-                    α = 1000.0,
-                    n_states)
-
+function QuantumModel(; μ,
+    σ,
+    υ_k_k,
+    υ_s_k,
+    υ_k_s,
+    υ_s_s,
+    λ_k_k,
+    λ_s_k,
+    λ_k_s,
+    λ_s_s,
+    α = 1000.0,
+    n_states)
     return QuantumModel(μ,
-                        σ,
-                        υ_k_k,
-                        υ_s_k,
-                        υ_k_s,
-                        υ_s_s,
-                        λ_k_k,
-                        λ_s_k,
-                        λ_k_s,
-                        λ_s_s,
-                        α,
-                        n_states)
+        σ,
+        υ_k_k,
+        υ_s_k,
+        υ_k_s,
+        υ_s_s,
+        λ_k_k,
+        λ_s_k,
+        λ_k_s,
+        λ_s_s,
+        α,
+        n_states)
 end
 
 function QuantumModel(
@@ -72,7 +71,6 @@ function QuantumModel(
     λ_s_s,
     α,
     n_states)
-
     parms = promote(
         μ,
         σ,
@@ -113,9 +111,9 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function predict(model::QuantumModel{T}, n_options) where {T}
-    (;μ,σ,α,n_states) = model 
-    (;υ_k_k,υ_s_k,υ_k_s,υ_s_s) = model 
-    (;λ_k_k,λ_s_k,λ_k_s,λ_s_s) = model 
+    (; μ, σ, α, n_states) = model
+    (; υ_k_k, υ_s_k, υ_k_s, υ_s_s) = model
+    (; λ_k_k, λ_s_k, λ_k_s, λ_s_s) = model
     n = div(n_states, n_options)
 
     initial_state = compute_initial_state(model, μ, σ, n_states)
@@ -139,11 +137,11 @@ function predict(model::QuantumModel{T}, n_options) where {T}
     U_s_s = exp(-im * λ_s_s * ℋ_s_s)
 
     # a projector for each option 
-    projectors = map(i -> 
-                        make_projector(n_states, n * (i - 1) + 1, i * n),
-                        1:n_options)
+    projectors = map(i ->
+            make_projector(n_states, n * (i - 1) + 1, i * n),
+        1:n_options)
 
-    preds = Vector{Matrix{T}}(undef,4)
+    preds = Vector{Matrix{T}}(undef, 4)
 
     # joint probability distribution for k then s given stimulus k 
     preds[1] = make_joint_dist(model, initial_state, projectors, U_k_k, U_s_k)
@@ -153,7 +151,7 @@ function predict(model::QuantumModel{T}, n_options) where {T}
     preds[3] = make_joint_dist(model, initial_state, projectors, U_s_s, U_k_s)
     # joint probability distribution for k then s given stimulus s 
     preds[4] = make_joint_dist(model, initial_state, projectors, U_k_s, U_s_s)
-    return preds 
+    return preds
 end
 
 """
@@ -182,9 +180,9 @@ julia> v = make_hamiltonian(model, 5, 2, .5)
 function make_hamiltonian(model::QuantumModel, n_states, υ, σ)
     mat = zeros(n_states, n_states)
     for i ∈ 1:n_states
-        mat[i,i] = (i / n_states) * υ
-        i < n_states ? mat[i,i+1] = σ : nothing 
-        i > 1 ? (mat[i,i-1] = σ) : nothing 
+        mat[i, i] = (i / n_states) * υ
+        i < n_states ? mat[i, i + 1] = σ : nothing
+        i > 1 ? (mat[i, i - 1] = σ) : nothing
     end
     return mat
 end
@@ -207,10 +205,10 @@ function make_joint_dist(model::QuantumModel, s0, projectors, U1, U2)
     probs = fill(0.0, n, n)
     for j ∈ 1:n, i ∈ 1:n
         # why abs instead of real?
-        probs[i,j] = sum(abs.(projectors[j] * (U2 * U1') * projectors[i] * U1 * s0).^2)
+        probs[i, j] = sum(abs.(projectors[j] * (U2 * U1') * projectors[i] * U1 * s0) .^ 2)
     end
     probs .= max.(probs, eps())
-    return probs 
+    return probs
 end
 
 """
@@ -227,5 +225,5 @@ Create a normally distribution initial state probability vector
 function compute_initial_state(model::QuantumModel, μ, σ, n_states)
     p = pdf.(Normal(μ, σ), 1:n_states)
     p ./= sum(p)
-    return p.^(1/2)
+    return p .^ (1 / 2)
 end

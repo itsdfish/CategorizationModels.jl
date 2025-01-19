@@ -10,15 +10,15 @@ A model object for the rational model.
 - `σs`: the standard deviation of the initial state distribution for stimulus s when it is evaluated first
 - `n_states`: the number of evidence states
 """
-struct RationalModel{T<:Real} <: Model 
+struct RationalModel{T <: Real} <: Model
     μk::T
-    μs::T 
+    μs::T
     σk::T
     σs::T
     n_states::Int
 end
 
-function RationalModel(;μk, μs, σk, σs, n_states)
+function RationalModel(; μk, μs, σk, σs, n_states)
     return RationalModel(μk, μs, σk, σs, n_states)
 end
 
@@ -51,10 +51,10 @@ distribution of rating both stimuli in two orders. The joint distributions are a
 4. The joint probability distribution for k then s given stimulus s where element `pred[i,j]` is the probability of rating stimulus `s` as `i` and stimulus `k` as `j` 
 """
 function predict(model::RationalModel{T}, n_options) where {T}
-    (;μk,μs,σk,σs,n_states) = model 
+    (; μk, μs, σk, σs, n_states) = model
     n = div(n_states, n_options)
-    
-    initial_states = Vector{Vector{T}}(undef,0)
+
+    initial_states = Vector{Vector{T}}(undef, 0)
     # initial state k then s for k stimulus
     push!(initial_states, compute_initial_state(model, μk, σk, n_states))
     #initial state s then k for k stimulus
@@ -63,20 +63,20 @@ function predict(model::RationalModel{T}, n_options) where {T}
     push!(initial_states, compute_initial_state(model, μs, σs, n_states))
     # initial state k then s for s stimulus
     push!(initial_states, reverse(initial_states[3]))
-    
+
     # change of basis matrix 
     R = anti_diagonal(n_states)
-    
+
     # a projector for each option 
-    projectors = map(i -> 
-                     make_projector(n_states, n * (i - 1) + 1, i * n),
-                     1:n_options)
-                     
+    projectors = map(i ->
+            make_projector(n_states, n * (i - 1) + 1, i * n),
+        1:n_options)
+
     # compute joint probability for each condition
-    preds = map(i -> 
-                make_joint_dist(model, i, projectors, R),
-                initial_states)
-    return preds 
+    preds = map(i ->
+            make_joint_dist(model, i, projectors, R),
+        initial_states)
+    return preds
 end
 
 """
@@ -93,10 +93,10 @@ function make_joint_dist(model::RationalModel, s0, projectors, R)
     probs = fill(eps(), n, n)
     for j ∈ 1:n
         i = n - j + 1
-        probs[i,j] = sum(projectors[j] * R * projectors[i] * s0)
+        probs[i, j] = sum(projectors[j] * R * projectors[i] * s0)
     end
     probs .= max.(probs, eps())
-    return probs 
+    return probs
 end
 
 """
@@ -111,7 +111,7 @@ Creates a n × n matrix with 1's along the off-diagonal and 0's elsewhere.
 function anti_diagonal(n)
     x = zeros(n, n)
     for i ∈ 1:n
-        x[i,n-i+1] = 1
+        x[i, n - i + 1] = 1
     end
-    return x 
+    return x
 end

@@ -51,10 +51,10 @@ function make_joint_dist(model::Model, s0, projectors, T)
     n = length(projectors)
     probs = fill(0.0, n, n)
     for j ∈ 1:n, i ∈ 1:n
-        probs[i,j] = sum(projectors[j] * T * projectors[i] * s0)
+        probs[i, j] = sum(projectors[j] * T * projectors[i] * s0)
     end
     probs .= max.(probs, eps())
-    return probs 
+    return probs
 end
 
 """
@@ -68,11 +68,11 @@ Samples indices of an n × n joint probability matrix.
 """
 function sample(c_dist)
     urand = rand()
-    n_rows,n_cols = size(c_dist)
-    for c ∈ 1:n_cols,r ∈ 1:n_rows
-        c_dist[r,c] > urand ? (return r, c) : nothing 
-    end 
-    return n_rows,n_cols
+    n_rows, n_cols = size(c_dist)
+    for c ∈ 1:n_cols, r ∈ 1:n_rows
+        c_dist[r, c] > urand ? (return r, c) : nothing
+    end
+    return n_rows, n_cols
 end
 
 """
@@ -88,7 +88,7 @@ function cummulative_dist(x)
     y = similar(x)
     y[1] = x[1]
     for i ∈ 2:length(x)
-        y[i] = y[i-1] + x[i]
+        y[i] = y[i - 1] + x[i]
     end
     return y
 end
@@ -104,7 +104,7 @@ Samples `n` indices (row,column) from a joint distribution.
 - `preds`: an n × n joint probability matrices
 - `n`: the number of samples 
 """
-function rand(model::Model, preds::Array{T,2}, n) where {T}
+function rand(model::Model, preds::Array{T, 2}, n) where {T}
     c_dist = cummulative_dist(preds)
     return map(_ -> sample(c_dist), 1:n)
 end
@@ -132,7 +132,7 @@ The data are organized as a vector of four n × n matrices representing ratings 
 
 4. Data for k then s given stimulus s where element `(i,j)`  is the rating index for rating stimulus `s` as `i` and stimulus `k` as `j`
 """
-function rand(model::Model, preds::Vector{Array{T,2}}, n) where {T}
+function rand(model::Model, preds::Vector{Array{T, 2}}, n) where {T}
     return map(p -> rand(model, p, n), preds)
 end
 
@@ -147,13 +147,13 @@ Computes the log pdf of responses within a given condition.
 - `preds`: an n × n joint probability matrices
 - `data`: an array of vectors, one per condition
 """
-function logpdf(model::Model, preds::Array{T,2}, data) where {T}
+function logpdf(model::Model, preds::Array{T, 2}, data) where {T}
     n = length(data)
     LLs = zeros(n)
     for i ∈ 1:n
         LLs[i] = log(preds[data[i]...])
     end
-    return LLs 
+    return LLs
 end
 
 """
@@ -176,7 +176,7 @@ The logpdfs are organized as four vectors of responses, one vector for each stim
 3. logpdfs for the condition in which stimulus s is rated as k then s   
 4. logpdfs for the condition in which stimulus s is rated as s then k  
 """
-function logpdf(model::Model, preds::Vector{Array{T,2}}, data) where {T}
+function logpdf(model::Model, preds::Vector{Array{T, 2}}, data) where {T}
     return map(i -> logpdf(model, preds[i], data[i]), 1:length(data))
 end
 
@@ -191,7 +191,7 @@ Returns the sum of the log likelihood across all trials and conditions.
 - `n_options`: the number of rating options
 - `data`: an array of vectors, one per condition
 """
-function sumlogpdf(model::Model, n_options, data) 
+function sumlogpdf(model::Model, n_options, data)
     preds = predict(model, n_options)
     return sum(sum(logpdf(model, preds, data)))
 end
